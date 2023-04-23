@@ -131,6 +131,7 @@
   <ItemGroup>
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\core\ParticleBuffer.cpp" />
     <ClCompile Include="src\core\Application.cpp" />
     <ClCompile Include="src\core\Window.cpp" />
     <ClCompile Include="src\shader\Shader.cpp" />
@@ -140,9 +141,11 @@
     <ClCompile Include="src\vertex\VertexBufferLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\core\ParticleBuffer.h" />
     <ClInclude Include="src\core\Application.h" />
     <ClInclude Include="src\core\Window.h" />
     <ClInclude Include="src\shader\Shader.h" />
+    <ClInclude Include="src\util\Constants.h" />
     <ClInclude Include="src\vertex\IndexBuffer.h" />
     <ClInclude Include="src\vertex\VertexArray.h" />
     <ClInclude Include="src\vertex\VertexBuffer.h" />

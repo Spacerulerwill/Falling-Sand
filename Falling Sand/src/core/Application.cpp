@@ -10,9 +10,7 @@
 #include <vertex/VertexBufferLayout.h>
 
 #include <core/Window.h>
-
-#define PARTICLE_INDEX(x,y) ((x) + ((y) * SCREEN_WIDTH)) * ONE_PARTICLE
-#define PIXEL_EMPTY(index) (pixels[index] == 0 && pixels[index+1] == 0 && pixels[index+2] == 0 && pixels[index+3] == 0)
+#include <core/ParticleBuffer.h>
 
 // static variable definitions
 std::unique_ptr<Application> Application::s_Instance = nullptr;
@@ -76,41 +74,8 @@ void Application::Run()
 	EBO.Bind();
 
 	Shader shader("res/shaders/default.shader");
-	shader.Bind();
-
-	// setup pixel buffer
-	memset(pixels, 0, sizeof(pixels));
-
-	std::random_device rd; // obtain a random number from hardware
-	std::mt19937 gen(rd()); // seed the generator
-	std::uniform_int_distribution<> chance(0, 100); // define the range		
+	shader.Bind();	
 	
-	
-	for (int y = 50; y < SCREEN_HEIGHT; y++) {
-		for (int x = 0; x < SCREEN_WIDTH; x++) {
-				if (chance(gen) < 10) {
-					particles.emplace_back(Particle{ x,y });
-					int index = PARTICLE_INDEX(x, y);
-					pixels[index] = 255;
-					pixels[index + 1] = 255;
-					pixels[index + 2] = 255;
-					pixels[index + 3] = 255;
-				}
-		}
-	}
-	
-	
-	
-	/*
-	particles.emplace_back(Particle{ 50, 719 });
-	int index = PARTICLE_INDEX(50, 719);
-	pixels[index] = 255;
-	pixels[index + 1] = 255;
-	pixels[index + 2] = 255;
-	pixels[index + 3] = 255;
-	*/
-	
-
 	glEnable(GL_TEXTURE_2D);
 	// The texture we're going to render to
 	unsigned int texture;
@@ -124,42 +89,20 @@ void Application::Run()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, particle_buffer.pixels);
 	
-
-	/*particles.emplace_back(Particle{50, 719});
-	int index = PARTICLE_INDEX(50, 719);
-
-	pixels[index] = 255;
-	pixels[index + 1] = 255;
-	pixels[index + 2] = 255;
-	pixels[index + 3] = 255;
-	*/
-	
-	// create floor
-	for (int i = 0; i < SCREEN_WIDTH; i++) {
-		pixels[PARTICLE_INDEX(i, 10)] = 122;
-		pixels[PARTICLE_INDEX(i, 10)+1] = 122;
-		pixels[PARTICLE_INDEX(i, 10)+2] = 122;
-		pixels[PARTICLE_INDEX(i, 10)+3] = 122;
-
-	}
-	
-
 	// application loop
 	// ---------------
 	while (!glfwWindowShouldClose(p_Window)) {
+		InputHandle();
+
 		// render
 		// ------
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-		
-		
-		
 
-		UpdateParticles();
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+		particle_buffer.UpdateParticles();
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, particle_buffer.pixels);
 
 		// draw quad to render too - main framebuffer
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -173,70 +116,22 @@ void Application::Run()
 
 }
 
-void Application::UpdateParticles()
+void Application::InputHandle()
 {
-	int particleCount = particles.size();
-	for (int i = 0; i < particleCount; i++) {
-		Particle* particle = &particles[i];
+	
+	if (glfwGetKey(p_Window, GLFW_KEY_0) == GLFW_PRESS) {
+		double xpos, ypos;
+		glfwGetCursorPos(p_Window, &xpos, &ypos);
 
-		if (particle->y > 0) {
-			int index = PARTICLE_INDEX(particle->x, particle->y);
-			int velocity = 1 + ACCELERATION * particle->frames;
-			int end_index;
+		int width, height;
+		glfwGetWindowSize(p_Window, &width, &height);
 
-			if (velocity > particle->y) {
-				velocity = particle->y;
-			}
+		int x = (xpos / width) * SCREEN_WIDTH;
+		int y = ((height - ypos) / height) * SCREEN_HEIGHT;
 
-			// is pixel empty below?
-			if (PIXEL_EMPTY(index - PARTICLE_PER_ROW)) {
-				// if so start falling
-				for (int i = 1; i <= velocity; i++) {
-					if (PIXEL_EMPTY(index - i * PARTICLE_PER_ROW)) {
-						particle->y--;
-					}
-					else {
-						particle->frames = -1;
-						break;
-					}
-				}
-				int new_index = PARTICLE_INDEX(particle->x, particle->y);
-				std::swap(pixels[index], pixels[new_index]);
-				std::swap(pixels[index + 1], pixels[new_index + 1]);
-				std::swap(pixels[index + 2], pixels[new_index + 2]);
-				std::swap(pixels[index + 3], pixels[new_index + 3]);
-				particle->frames++;
-				//std::cout << "falling" << std::endl;
-			}
-			else {
-				// otherwise try and move to left or right of pixel
-				// try and go down and to left
-				if (particle->x > 0 && PIXEL_EMPTY(index - PARTICLE_PER_ROW - ONE_PARTICLE))
-				{
-					std::swap(pixels[index], pixels[index - PARTICLE_PER_ROW - ONE_PARTICLE]);
-					std::swap(pixels[index + 1], pixels[index - PARTICLE_PER_ROW - ONE_PARTICLE + 1]);
-					std::swap(pixels[index + 2], pixels[index - PARTICLE_PER_ROW - ONE_PARTICLE + 2]);
-					std::swap(pixels[index + 3], pixels[index - PARTICLE_PER_ROW - ONE_PARTICLE + 3]);
-					particle->x -= 1;
-					particle->y -= 1;
-					continue;
-				}
-				// try and go down to rigth
-				else if (particle->x < SCREEN_WIDTH - 1 && PIXEL_EMPTY(index - PARTICLE_PER_ROW + ONE_PARTICLE))
-				{
-					std::swap(pixels[index], pixels[index - PARTICLE_PER_ROW + ONE_PARTICLE]);
-					std::swap(pixels[index + 1], pixels[index - PARTICLE_PER_ROW + ONE_PARTICLE + 1]);
-					std::swap(pixels[index + 2], pixels[index - PARTICLE_PER_ROW + ONE_PARTICLE + 2]);
-					std::swap(pixels[index + 3], pixels[index - PARTICLE_PER_ROW + ONE_PARTICLE + 3]);
-					particle->x += 1;
-					particle->y -= 1;
-					continue;
-				}
-			}
-		}
+		particle_buffer.CreateParticle(x, y);
 	}
 }
-
 
 std::unique_ptr<Application>& Application::GetInstance() {
     if (Application::s_Instance == nullptr) {
