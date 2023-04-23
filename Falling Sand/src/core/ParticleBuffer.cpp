@@ -1,3 +1,4 @@
+#include <iostream>
 #include "ParticleBuffer.h"
 
 ParticleBuffer::ParticleBuffer()
@@ -15,7 +16,7 @@ void ParticleBuffer::UpdateParticles()
 
 		if (particle->y > 0) {
 			int index = PARTICLE_INDEX(particle->x, particle->y);
-			int velocity = (1 + ACCELERATION * particle->frames) * 1;
+			int velocity = (1 + ACCELERATION * particle->frames);
 
 			if (velocity > particle->y) {
 				velocity = particle->y;
@@ -71,7 +72,7 @@ void ParticleBuffer::CreateParticle(int x, int y)
 		pixels[index + 2] = 255;
 		pixels[index + 3] = 255;
 
-		particles.emplace_back(Particle{ x, y });
+		particles.emplace_back(Particle{ x, y});
 	}
 }
 

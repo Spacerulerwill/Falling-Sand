@@ -1,8 +1,8 @@
 #include "Application.h"
 #include <iostream>
-#include <sstream>
 #include <random>
 #include <vector>
+#include <algorithm>
 
 #include <vertex/IndexBuffer.h>
 #include <vertex/VertexArray.h>
@@ -17,6 +17,8 @@ std::unique_ptr<Application> Application::s_Instance = nullptr;
 GLFWwindow* Application::p_Window = nullptr;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, int button, int action, int mods);
+int clip(float n, float lower, float upper);
 
 // information for quad that we render the fractal onto
 float vertices[] = {
@@ -50,6 +52,7 @@ void Application::Run()
 	p_Window = Window::GetWindow();
 
 	glfwSetFramebufferSizeCallback(p_Window, framebuffer_size_callback);
+	glfwSetMouseButtonCallback(p_Window, mouse_callback);
 
 	// initialise GLAD
 	// ---------------
@@ -116,21 +119,48 @@ void Application::Run()
 
 }
 
+void Application::MouseCallback(GLFWwindow* window, int button, int action, int mods)
+{
+	if (button == GLFW_MOUSE_BUTTON_LEFT) {
+		if (GLFW_PRESS == action)
+			lmouse = true;
+		else if (GLFW_RELEASE == action)
+			lmouse = false;
+	}
+}
+
 void Application::InputHandle()
 {
 	
-	if (glfwGetKey(p_Window, GLFW_KEY_0) == GLFW_PRESS) {
+	if (lmouse) {
+
 		double xpos, ypos;
 		glfwGetCursorPos(p_Window, &xpos, &ypos);
 
 		int width, height;
 		glfwGetWindowSize(p_Window, &width, &height);
 
-		int x = (xpos / width) * SCREEN_WIDTH;
-		int y = ((height - ypos) / height) * SCREEN_HEIGHT;
+		for (int i = 0; i < 60 * TAU; i++) {
+			double r = 100 * sqrt(((double)rand() / (RAND_MAX)));
+			double theta = ((double)rand() / (RAND_MAX)) * TAU;
+			int offsetX = r * cos(theta);
+			int offsetY = r * sin(theta);
 
-		particle_buffer.CreateParticle(x, y);
-	}
+			double xpos, ypos;
+			glfwGetCursorPos(p_Window, &xpos, &ypos);
+
+			int width, height;
+			glfwGetWindowSize(p_Window, &width, &height);
+
+			int x = ((xpos + offsetX) / width) * SCREEN_WIDTH;
+			int y = ((height - (ypos + offsetY)) / height) * SCREEN_HEIGHT;
+
+			x = clip(x, 0, SCREEN_WIDTH - 1);
+			y = clip(y, 0, SCREEN_HEIGHT - 1);
+
+			particle_buffer.CreateParticle(x, y);
+		}
+	} 
 }
 
 std::unique_ptr<Application>& Application::GetInstance() {
@@ -145,4 +175,12 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	// make sure the viewport matches the new window dimensions; note that width and 
 	// height will be significantly larger than specified on retina displays.
 	glViewport(0, 0, width, height);
+}
+void mouse_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	Application::GetInstance()->MouseCallback(window, button, action, mods);
+}
+
+int clip(float n, float lower, float upper) {
+	return std::max(lower, std::min(n, upper));
 }
