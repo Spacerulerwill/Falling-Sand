@@ -18,7 +18,7 @@ GLFWwindow* Application::p_Window = nullptr;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, int button, int action, int mods);
-int clip(float n, float lower, float upper);
+int clip(int n, int lower, int upper);
 
 // information for quad that we render the fractal onto
 float vertices[] = {
@@ -140,7 +140,7 @@ void Application::InputHandle()
 		int width, height;
 		glfwGetWindowSize(p_Window, &width, &height);
 
-		for (int i = 0; i < 60 * TAU; i++) {
+		for (int i = 0; i < 20 * TAU; i++) {
 			double r = 100 * sqrt(((double)rand() / (RAND_MAX)));
 			double theta = ((double)rand() / (RAND_MAX)) * TAU;
 			int offsetX = r * cos(theta);
@@ -181,6 +181,6 @@ void mouse_callback(GLFWwindow* window, int button, int action, int mods)
 	Application::GetInstance()->MouseCallback(window, button, action, mods);
 }
 
-int clip(float n, float lower, float upper) {
+int clip(int n, int lower, int upper) {
 	return std::max(lower, std::min(n, upper));
 }
