@@ -141,7 +141,7 @@ void Application::InputHandle()
 		glfwGetWindowSize(p_Window, &width, &height);
 
 		for (int i = 0; i < 20 * TAU; i++) {
-			double r = 100 * sqrt(((double)rand() / (RAND_MAX)));
+			double r = 300 * sqrt(((double)rand() / (RAND_MAX)));
 			double theta = ((double)rand() / (RAND_MAX)) * TAU;
 			int offsetX = r * cos(theta);
 			int offsetY = r * sin(theta);

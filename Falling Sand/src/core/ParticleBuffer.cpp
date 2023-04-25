@@ -34,11 +34,8 @@ void ParticleBuffer::UpdateParticles()
 					}
 					else {
 						// if collided with a particle
-						Particle* particle_below = particles[particle_index - SCREEN_WIDTH];
-
-						if (particle_below != nullptr){
-							particle->frames = particle_below->frames;
-						}
+						Particle* particle_below = particles[particle_index - i * SCREEN_WIDTH];
+						particle->frames = particle_below->frames;
 						break;
 					}
 				}
@@ -54,13 +51,16 @@ void ParticleBuffer::UpdateParticles()
 					SwapPixels(particle_index, particle_index - SCREEN_WIDTH - 1);
 					particle->x -= 1;
 					particle->y -= 1;
+					continue;
 				}
+
 				// try and go down to rigth
 				else if (particle->x < SCREEN_WIDTH - 1 && PIXEL_EMPTY(pixel_index - PARTICLE_PER_ROW + ONE_PARTICLE))
 				{
 					SwapPixels(particle_index, particle_index - SCREEN_WIDTH + 1);
 					particle->x += 1;
 					particle->y -= 1;
+					continue;
 				}
 			}
 		}
