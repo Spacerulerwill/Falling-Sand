@@ -82,6 +82,20 @@ void ParticleBuffer::CreateParticle(int x, int y)
 	}
 }
 
+void ParticleBuffer::DeleteParticle(int x, int y)
+{
+	int particle_index = PARTICLE_INDEX(x, y);
+	int pixel_index = particle_index * 4;
+
+	delete particles[particle_index];
+	particles[particle_index] = nullptr;
+	pixels[pixel_index] = 0;
+	pixels[pixel_index+1] = 0;
+	pixels[pixel_index+2] = 0;
+	pixels[pixel_index+3] = 0;
+
+}
+
 void ParticleBuffer::SwapPixels(int index1, int index2)
 {
 	std::swap(particles[index1], particles[index2]);

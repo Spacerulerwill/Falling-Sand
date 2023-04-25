@@ -18,6 +18,8 @@ GLFWwindow* Application::p_Window = nullptr;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, int button, int action, int mods);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
 int clip(int n, int lower, int upper);
 
 // information for quad that we render the fractal onto
@@ -53,6 +55,7 @@ void Application::Run()
 
 	glfwSetFramebufferSizeCallback(p_Window, framebuffer_size_callback);
 	glfwSetMouseButtonCallback(p_Window, mouse_callback);
+	glfwSetScrollCallback(p_Window, scroll_callback);
 
 	// initialise GLAD
 	// ---------------
@@ -127,7 +130,19 @@ void Application::MouseCallback(GLFWwindow* window, int button, int action, int 
 		else if (GLFW_RELEASE == action)
 			lmouse = false;
 	}
+
+	if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+		if (action == GLFW_PRESS)
+			rmouse = true;
+		else if (action == GLFW_RELEASE)
+			rmouse = false;
+	}
 }
+
+void Application::ScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+	cursor_radius = clip(cursor_radius + 10 * yoffset, 10, 300);
+}
+
 
 void Application::InputHandle()
 {
@@ -140,8 +155,8 @@ void Application::InputHandle()
 		int width, height;
 		glfwGetWindowSize(p_Window, &width, &height);
 
-		for (int i = 0; i < 20 * TAU; i++) {
-			double r = 300 * sqrt(((double)rand() / (RAND_MAX)));
+		for (int i = 0; i < cursor_radius * TAU * 0.1f; i++) {
+			double r = cursor_radius * sqrt(((double)rand() / (RAND_MAX)));
 			double theta = ((double)rand() / (RAND_MAX)) * TAU;
 			int offsetX = r * cos(theta);
 			int offsetY = r * sin(theta);
@@ -161,6 +176,28 @@ void Application::InputHandle()
 			particle_buffer.CreateParticle(x, y);
 		}
 	} 
+
+	if (rmouse) {
+		double xpos, ypos;
+		glfwGetCursorPos(p_Window, &xpos, &ypos);
+
+		int width, height;
+		glfwGetWindowSize(p_Window, &width, &height);
+
+		for (int iy = -cursor_radius; iy < cursor_radius; iy++) {
+			int dx = (int)sqrt(cursor_radius * cursor_radius - iy * iy);
+			for (int ix = -dx; ix < dx; ix++) {
+				int x = ((xpos + ix) / width) * SCREEN_WIDTH;
+				int y = ((height - (ypos + iy)) / height) * SCREEN_HEIGHT;
+
+				x = clip(x, 0, SCREEN_WIDTH - 1);
+				y = clip(y, 0, SCREEN_HEIGHT - 1);
+
+				particle_buffer.DeleteParticle(x, y);
+			}
+		}
+	}
+
 }
 
 std::unique_ptr<Application>& Application::GetInstance() {
@@ -179,6 +216,11 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 void mouse_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	Application::GetInstance()->MouseCallback(window, button, action, mods);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	Application::GetInstance()->ScrollCallback(window, xoffset, yoffset);
 }
 
 int clip(int n, int lower, int upper) {

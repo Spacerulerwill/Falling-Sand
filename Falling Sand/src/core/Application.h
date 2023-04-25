@@ -17,7 +17,9 @@ private:
 	static GLFWwindow* p_Window;
 	ParticleBuffer particle_buffer;
 
-	bool lmouse = false;
+	bool lmouse, rmouse = false;
+
+	int cursor_radius = 30;
 
 public:
 	Application();
@@ -27,6 +29,7 @@ public:
 	static std::unique_ptr<Application>& GetInstance();
 
 	void MouseCallback(GLFWwindow* window, int button, int action, int mods);
+	void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 	void InputHandle();
 };
 

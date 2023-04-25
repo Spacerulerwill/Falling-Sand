@@ -20,6 +20,7 @@ public:
 	ParticleBuffer();
 	void UpdateParticles();
 	void CreateParticle(int x, int y);
+	void DeleteParticle(int x, int y);
 	void SwapPixels(int index1, int index2);
 	uint8_t pixels[CHANNEL_COUNT];
 
