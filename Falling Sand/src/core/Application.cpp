@@ -101,6 +101,7 @@ void Application::Run()
 	// ---------------
 	while (!glfwWindowShouldClose(p_Window)) {
 		InputHandle();
+		glfwPollEvents();
 
 		// render
 		// ------
@@ -116,7 +117,6 @@ void Application::Run()
 		// glfw: swap buffers and poll IO events (key presses, mouse interactions etc.)
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(p_Window);
-		glfwPollEvents();
 	}
 	glfwTerminate();
 

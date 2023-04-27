@@ -4,9 +4,9 @@
 #include <vector>
 #include <util/Constants.h>
 
-#define PARTICLE_INDEX(x,y) (x + ((y) * SCREEN_WIDTH))
+#define PARTICLE_INDEX(x,y) ((x) + ((y) * SCREEN_WIDTH))
 #define PIXEL_INDEX(x,y) (PARTICLE_INDEX(x,y)) * ONE_PARTICLE
-#define PIXEL_EMPTY(index) (pixels[index] == 0 && pixels[index+1] == 0 && pixels[index+2] == 0 && pixels[index+3] == 0)
+#define PIXEL_EMPTY(index) (pixels[(index)] == 0 && pixels[(index)+1] == 0 && pixels[(index)+2] == 0 && pixels[(index)+3] == 0)
 
 struct Particle {
 	int x;

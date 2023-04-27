@@ -19,14 +19,14 @@ void ParticleBuffer::UpdateParticles()
 		int pixel_index = ONE_PARTICLE * particle_index;
 
 		if (particle->y > 0) {
-			int velocity = (1 + ACCELERATION * particle->frames);
-
-			if (velocity > particle->y) {
-				velocity = particle->y;
-			}
-
-			// is pixel empty below?
+			// is pixel empty below? 
 			if (PIXEL_EMPTY(pixel_index - PARTICLE_PER_ROW)) {
+				int velocity = (1 + ACCELERATION * particle->frames);
+
+				if (velocity > particle->y) {
+					velocity = particle->y;
+				}
+
 				// if so start falling
 				for (int i = 1; i <= velocity; i++) {
 					if (PIXEL_EMPTY(pixel_index - i * PARTICLE_PER_ROW)) {
@@ -35,7 +35,7 @@ void ParticleBuffer::UpdateParticles()
 					else {
 						// if collided with a particle
 						Particle* particle_below = particles[particle_index - i * SCREEN_WIDTH];
-						particle->frames = particle_below->frames;
+						particle_below->frames = particle->frames;
 						break;
 					}
 				}
@@ -44,24 +44,25 @@ void ParticleBuffer::UpdateParticles()
 				particle->frames++;
 			}
 			else {
-				// otherwise try and move to left or right of pixel
-				// try and go down and to left
-				if (particle->x > 0 && PIXEL_EMPTY(pixel_index - PARTICLE_PER_ROW - ONE_PARTICLE))
-				{
-					SwapPixels(particle_index, particle_index - SCREEN_WIDTH - 1);
-					particle->x -= 1;
-					particle->y -= 1;
-					continue;
-				}
+					// otherwise try and move to left or right of pixel
 
-				// try and go down to rigth
-				else if (particle->x < SCREEN_WIDTH - 1 && PIXEL_EMPTY(pixel_index - PARTICLE_PER_ROW + ONE_PARTICLE))
-				{
-					SwapPixels(particle_index, particle_index - SCREEN_WIDTH + 1);
-					particle->x += 1;
-					particle->y -= 1;
-					continue;
-				}
+					// try and go down and to left
+					if (particle->x > 0 && PIXEL_EMPTY(pixel_index - PARTICLE_PER_ROW - ONE_PARTICLE) && PIXEL_EMPTY(pixel_index-ONE_PARTICLE))
+					{
+						SwapPixels(particle_index, particle_index - SCREEN_WIDTH - 1);
+						particle->x -= 1;
+						particle->y -= 1;
+						continue;
+					}
+					// try and go down to rigth
+					else if (particle->x < SCREEN_WIDTH - 1 && PIXEL_EMPTY(pixel_index - PARTICLE_PER_ROW + ONE_PARTICLE) && PIXEL_EMPTY(pixel_index+ONE_PARTICLE))
+					{
+						SwapPixels(particle_index, particle_index - SCREEN_WIDTH + 1);
+						particle->x += 1;
+						particle->y -= 1;
+						continue;
+					}
+
 			}
 		}
 	}
