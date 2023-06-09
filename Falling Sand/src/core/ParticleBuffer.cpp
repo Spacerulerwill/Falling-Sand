@@ -1,4 +1,5 @@
 #include <iostream>
+#include <random>
 #include "ParticleBuffer.h"
 
 ParticleBuffer::ParticleBuffer()
@@ -27,10 +28,13 @@ void ParticleBuffer::UpdateParticles()
 					velocity = particle->y;
 				}
 
+
+
 				// if so start falling
 				for (int i = 1; i <= velocity; i++) {
 					if (PIXEL_EMPTY(pixel_index - i * PARTICLE_PER_ROW)) {
 						particle->y--;
+
 					}
 					else {
 						// if collided with a particle
@@ -39,31 +43,35 @@ void ParticleBuffer::UpdateParticles()
 						break;
 					}
 				}
+
 				int new_particle_index = PARTICLE_INDEX(particle->x, particle->y);
 				SwapPixels(particle_index, new_particle_index);
 				particle->frames++;
 			}
 			else {
-					// otherwise try and move to left or right of pixel
-
-					// try and go down and to left
-					if (particle->x > 0 && PIXEL_EMPTY(pixel_index - PARTICLE_PER_ROW - ONE_PARTICLE) && PIXEL_EMPTY(pixel_index-ONE_PARTICLE))
-					{
-						SwapPixels(particle_index, particle_index - SCREEN_WIDTH - 1);
-						particle->x -= 1;
-						particle->y -= 1;
-						continue;
-					}
-					// try and go down to rigth
-					else if (particle->x < SCREEN_WIDTH - 1 && PIXEL_EMPTY(pixel_index - PARTICLE_PER_ROW + ONE_PARTICLE) && PIXEL_EMPTY(pixel_index+ONE_PARTICLE))
-					{
-						SwapPixels(particle_index, particle_index - SCREEN_WIDTH + 1);
-						particle->x += 1;
-						particle->y -= 1;
-						continue;
-					}
-
-			}
+				// otherwise try and move to left or right of pixel
+					
+				
+				// try and go down and to left
+				if (particle->x > 0 && PIXEL_EMPTY(pixel_index - PARTICLE_PER_ROW - ONE_PARTICLE) && PIXEL_EMPTY(pixel_index - ONE_PARTICLE))
+				{
+					SwapPixels(particle_index, particle_index - SCREEN_WIDTH - 1);
+					particle->x -= 1;
+					particle->y -= 1;
+					continue;
+				}
+				// try and go down to rigth
+				else if (particle->x < SCREEN_WIDTH - 1 && PIXEL_EMPTY(pixel_index - PARTICLE_PER_ROW + ONE_PARTICLE) && PIXEL_EMPTY(pixel_index + ONE_PARTICLE))
+				{
+					SwapPixels(particle_index, particle_index - SCREEN_WIDTH + 1);
+					particle->x += 1;
+					particle->y -= 1;
+					continue;
+				}
+				else {
+					particle->frames = 0;
+				}
+			} 
 		}
 	}
 }
@@ -73,11 +81,14 @@ void ParticleBuffer::CreateParticle(int x, int y)
 	int particle_index = PARTICLE_INDEX(x, y);
 
 	if (PIXEL_EMPTY(particle_index * ONE_PARTICLE)) {
+		std::random_device dev;
+		std::mt19937 rng(dev());
+		std::uniform_int_distribution<std::mt19937::result_type> dist6(-20, 50); // distribution in range [1, 6]
 
-		pixels[particle_index * ONE_PARTICLE] = 255;
-		pixels[particle_index * ONE_PARTICLE + 1] = 255;
-		pixels[particle_index * ONE_PARTICLE + 2] = 255;
-		pixels[particle_index * ONE_PARTICLE + 3] = 255;
+		pixels[particle_index * ONE_PARTICLE] = 205 + dist6(rng);
+		pixels[particle_index * ONE_PARTICLE + 1] = 170 + dist6(rng);
+		pixels[particle_index * ONE_PARTICLE + 2] = 109 + dist6(rng);
+		pixels[particle_index * ONE_PARTICLE + 3] = 255 + dist6(rng);
 
 		particles[particle_index] = new Particle{x, y};
 	}

@@ -2,7 +2,6 @@
 #include <iostream>
 #include <random>
 #include <vector>
-#include <algorithm>
 
 #include <vertex/IndexBuffer.h>
 #include <vertex/VertexArray.h>
@@ -12,6 +11,8 @@
 #include <core/Window.h>
 #include <core/ParticleBuffer.h>
 
+int clip(int n, int upper, int lower);
+
 // static variable definitions
 std::unique_ptr<Application> Application::s_Instance = nullptr;
 GLFWwindow* Application::p_Window = nullptr;
@@ -20,7 +21,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-int clip(int n, int lower, int upper);
 
 // information for quad that we render the fractal onto
 float vertices[] = {
@@ -132,8 +132,9 @@ void Application::MouseCallback(GLFWwindow* window, int button, int action, int 
 	}
 
 	if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-		if (action == GLFW_PRESS)
+		if (action == GLFW_PRESS) {
 			rmouse = true;
+		}
 		else if (action == GLFW_RELEASE)
 			rmouse = false;
 	}
@@ -222,7 +223,6 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	Application::GetInstance()->ScrollCallback(window, xoffset, yoffset);
 }
-
 int clip(int n, int lower, int upper) {
 	return std::max(lower, std::min(n, upper));
 }
