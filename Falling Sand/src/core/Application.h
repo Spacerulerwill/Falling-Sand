@@ -20,6 +20,7 @@ private:
 	bool lmouse, rmouse = false;
 
 	int cursor_radius = 30;
+	uint8_t particle_type = SAND;
 
 public:
 	Application();
@@ -30,6 +31,7 @@ public:
 
 	void MouseCallback(GLFWwindow* window, int button, int action, int mods);
 	void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+	void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	void InputHandle();
 };
 

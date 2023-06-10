@@ -17,80 +17,85 @@ void ParticleBuffer::UpdateParticles()
 		if (particle == nullptr)
 			continue;
 
-		int pixel_index = ONE_PARTICLE * particle_index;
-
-		if (particle->y > 0) {
-			// is pixel empty below? 
-			if (PIXEL_EMPTY(pixel_index - PARTICLE_PER_ROW)) {
-				int velocity = (1 + ACCELERATION * particle->frames);
-
-				if (velocity > particle->y) {
-					velocity = particle->y;
-				}
-
-
-
-				// if so start falling
-				for (int i = 1; i <= velocity; i++) {
-					if (PIXEL_EMPTY(pixel_index - i * PARTICLE_PER_ROW)) {
-						particle->y--;
-
-					}
-					else {
-						// if collided with a particle
-						Particle* particle_below = particles[particle_index - i * SCREEN_WIDTH];
-						particle_below->frames = particle->frames;
-						break;
-					}
-				}
-
-				int new_particle_index = PARTICLE_INDEX(particle->x, particle->y);
-				SwapPixels(particle_index, new_particle_index);
-				particle->frames++;
-			}
-			else {
-				// otherwise try and move to left or right of pixel
-					
-				
-				// try and go down and to left
-				if (particle->x > 0 && PIXEL_EMPTY(pixel_index - PARTICLE_PER_ROW - ONE_PARTICLE) && PIXEL_EMPTY(pixel_index - ONE_PARTICLE))
-				{
-					SwapPixels(particle_index, particle_index - SCREEN_WIDTH - 1);
-					particle->x -= 1;
-					particle->y -= 1;
-					continue;
-				}
-				// try and go down to rigth
-				else if (particle->x < SCREEN_WIDTH - 1 && PIXEL_EMPTY(pixel_index - PARTICLE_PER_ROW + ONE_PARTICLE) && PIXEL_EMPTY(pixel_index + ONE_PARTICLE))
-				{
-					SwapPixels(particle_index, particle_index - SCREEN_WIDTH + 1);
-					particle->x += 1;
-					particle->y -= 1;
-					continue;
-				}
-				else {
-					particle->frames = 0;
-				}
-			} 
+		switch (particle->type) {
+		case SAND: 
+			UpdateSand(particle, particle_index);
+			break;
+		
 		}
 	}
 }
 
-void ParticleBuffer::CreateParticle(int x, int y)
+void ParticleBuffer::UpdateSand(Particle* particle, int particle_index)
+{
+	if (particle->y > 0) {
+		// is pixel empty below? 
+		if (PIXEL_EMPTY(particle_index - SCREEN_WIDTH)) {
+			int velocity = (1 + ACCELERATION * particle->frames);
+
+			if (velocity > particle->y) {
+				velocity = particle->y;
+			}
+
+			// if so start falling
+			for (int i = 1; i <= velocity; i++) {
+				if (PIXEL_EMPTY(particle_index - i * SCREEN_WIDTH)) {
+					particle->y--;
+
+				}
+				else {
+					// if collided with a particle
+					Particle* particle_below = particles[particle_index - i * SCREEN_WIDTH];
+					particle_below->frames = particle->frames;
+					break;
+				}
+			}
+
+			int new_particle_index = PARTICLE_INDEX(particle->x, particle->y);
+			SwapPixels(particle_index, new_particle_index);
+			particle->frames++;
+		}
+		else {
+			// otherwise try and move to left or right of pixel
+
+
+			// try and go down and to left
+			if (particle->x > 0 && PIXEL_EMPTY(particle_index - SCREEN_WIDTH - 1) && PIXEL_EMPTY(particle_index - 1))
+			{
+				SwapPixels(particle_index, particle_index - SCREEN_WIDTH - 1);
+				particle->x -= 1;
+				particle->y -= 1;
+				return;
+			}
+			// try and go down to rigth
+			else if (particle->x < SCREEN_WIDTH - 1 && PIXEL_EMPTY(particle_index - SCREEN_WIDTH + 1) && PIXEL_EMPTY(particle_index + 1))
+			{
+				SwapPixels(particle_index, particle_index - SCREEN_WIDTH + 1);
+				particle->x += 1;
+				particle->y -= 1;
+				return;
+			}
+			else {
+				particle->frames = 0;
+			}
+		}
+	}
+}
+
+void ParticleBuffer::CreateParticle(uint8_t type, int x, int y)
 {
 	int particle_index = PARTICLE_INDEX(x, y);
 
-	if (PIXEL_EMPTY(particle_index * ONE_PARTICLE)) {
-		std::random_device dev;
-		std::mt19937 rng(dev());
-		std::uniform_int_distribution<std::mt19937::result_type> dist6(-20, 50); // distribution in range [1, 6]
+	RGB rgb = particleColors[type];
 
-		pixels[particle_index * ONE_PARTICLE] = 205 + dist6(rng);
-		pixels[particle_index * ONE_PARTICLE + 1] = 170 + dist6(rng);
-		pixels[particle_index * ONE_PARTICLE + 2] = 109 + dist6(rng);
-		pixels[particle_index * ONE_PARTICLE + 3] = 255 + dist6(rng);
+	if (PIXEL_EMPTY(particle_index)) {
 
-		particles[particle_index] = new Particle{x, y};
+		pixels[particle_index * ONE_PARTICLE] = rgb.r;
+		pixels[particle_index * ONE_PARTICLE + 1] = rgb.g;
+		pixels[particle_index * ONE_PARTICLE + 2] = rgb.b;
+		pixels[particle_index * ONE_PARTICLE + 3] = 255;
+
+		particles[particle_index] = new Particle{type, x, y, 0};
 	}
 }
 
